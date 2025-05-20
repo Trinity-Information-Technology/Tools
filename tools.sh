@@ -83,7 +83,6 @@ sudo /opt/splunkforwarder/bin/splunk status
 # Monitor logs for 1 minute, then terminate
 echo "Monitoring logs for 1 minute..."
 timeout 60 sudo tail -f /opt/splunkforwarder/var/log/splunk/splunkd.log
-
 echo "Log monitoring complete."
 
 
@@ -94,8 +93,8 @@ echo "Log monitoring complete."
 echo "Installing Sentinel One Agent now"
 
 # Variables
-REPO_URL="https://github.com/your-repository/SentinelAgent_linux_x86_64_v23_4_1_4.zip"
-FILE_NAME="SentinelAgent_linux_x86_64_v23_4_1_4.zip"
+REPO_URL="https://github.com/chukstrinity/Tools/blob/main/SentinelAgent_linux.zip"
+FILE_NAME="SentinelAgent_linux.zip"
 TOKEN="eyJ1cmwiOiAiaHR0cHM6Ly91c2VhMS1zMXN5LnNlbnRpbmVsb25lLm5ldCIsICJzaXRlX2tleSI6ICI2Mjk4YmIxNzI5YmQ0MDY1In0="
 
 # Download the package
@@ -112,10 +111,10 @@ if [ -f /etc/os-release ]; then
     . /etc/os-release
     if [[ "$ID" == "ubuntu" || "$ID" == "debian" ]]; then
         echo "Installing SentinelOne agent on Ubuntu/Debian..."
-        sudo dpkg -i SentinelAgent_linux_x86_64_v23_4_1_4.deb
+        sudo dpkg -i SentinelAgent_linux_v23_1_2_9.deb
     elif [[ "$ID" == "rhel" || "$ID" == "centos" || "$ID" == "fedora" ]]; then
         echo "Installing SentinelOne agent on RHEL/CentOS/Fedora..."
-        sudo rpm -ivh SentinelAgent_linux_x86_64_v23_4_1_4.rpm
+        sudo rpm -ivh SentinelAgent_linux_aarch64_v25_1_2_17.rpm
     else
         echo "Unsupported OS detected: $ID"
         exit 1
@@ -130,7 +129,7 @@ echo "Setting up SentinelOne agent..."
 sudo /opt/sentinelone/bin/sentinelctl management token set "$TOKEN"
 
 # Clean up unnecessary files
-rm -rf SentinelAgent_linux_x86_64_v23_4_1_4.deb SentinelAgent_linux_x86_64_v23_4_1_4.rpm
+rm -rf SentinelAgent_linux_*.deb SentinelAgent_linux*.rpm
 
 # Start and verify SentinelOne agent
 echo "Starting SentinelOne agent..."
