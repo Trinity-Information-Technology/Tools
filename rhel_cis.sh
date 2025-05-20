@@ -422,3 +422,5 @@ fi
 echo -e "\n[3]Network Configuration\n"
 
 echo "Network Parameters (Host Only)"
+
+echo "Hardening Completed"
