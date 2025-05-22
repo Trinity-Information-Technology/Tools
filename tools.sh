@@ -156,7 +156,7 @@ install_splunk_forwarder() {
         cat << EOF | su - splunk -c "tee ${INSTALL_DIR}/etc/system/local/deploymentclient.conf > /dev/null"
 [deployment-client]
 [target-broker:deploymentServer]
-targetUri=74.235.207.51:8089
+targetUri=74.235.207.51:9997
 EOF
         # Restart to apply configuration changes
         su - splunk -c "${INSTALL_DIR}/bin/splunk restart" || log_message "Warning: Failed to restart Splunk service."
