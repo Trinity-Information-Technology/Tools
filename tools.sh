@@ -371,7 +371,8 @@ main() {
     log_message "Zip Utility: $(command -v zip >/dev/null 2>&1 && echo "installed" || echo "not installed")"
     log_message "Unzip Utility: $(command -v unzip >/dev/null 2>&1 && echo "installed" || echo "not installed")"
     log_message "Automox Agent: $(systemctl is-active amagent 2>/dev/null || echo "unknown")"
-    log_message "Splunk Forwarder: $(systemctl is-active splunkd 2>/dev/null || echo "unknown")"
+    #log_message "Splunk Forwarder: $(systemctl is-active splunkd 2>/dev/null || echo "unknown")"
+    log_message "Splunk Forwarder: $(/opt/splunkforwarder/bin/splunk status 2>/dev/null || echo "unknown")"
     log_message "SentinelOne Agent: $(systemctl is-active sentinelone 2>/dev/null || echo "unknown")"
     log_message "--------------------------------"
 }
