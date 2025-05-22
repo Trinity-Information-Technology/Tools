@@ -242,7 +242,7 @@ EOF
         cat << EOF | su - splunk -c "tee ${INSTALL_DIR}/etc/system/local/deploymentclient.conf > /dev/null"
 [deployment-client]
 [target-broker:deploymentServer]
-targetUri=74.235.207.51:8089
+targetUri=74.235.207.51:9997
 EOF
         
         # Start service and enable at boot
