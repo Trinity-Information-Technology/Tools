@@ -141,13 +141,13 @@ install_sentinelone() {
     log_message "Installing SentinelOne..."
 
     TOKEN="eyJ1cmwiOiAiaHR0cHM6Ly91c2VhMS1zMXN5LnNlbnRpbmVsb25lLm5ldCIsICJzaXRlX2tleSI6ICI2Mjk4YmIxNzI5YmQ0MDY1In0="
-    FILE_NAME="SentinelAgent_linux.tar"
+    FILE_NAME="SentinelAgent_linux.tar.gz"
 
     if [ -d "/opt/sentinelone" ]; then
         /opt/sentinelone/bin/sentinelctl management token set "$TOKEN"
         /opt/sentinelone/bin/sentinelctl control status
     else
-        tar -xf "$FILE_NAME" || {
+        tar -xzf "$FILE_NAME" || {
             log_message "Extraction failed."
             return 1
         }
