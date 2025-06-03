@@ -156,9 +156,9 @@ install_sentinelone() {
         INSTALL_SUCCESS=false
 
         if [[ "$ID" == "ubuntu" || "$ID" == "debian" ]]; then
-            dpkg -i SentinelAgent_linux_x86_64_v25_1_2_17.deb && INSTALL_SUCCESS=true
+            dpkg -i SentinelAgent_linux_v23_1_2_9.deb && INSTALL_SUCCESS=true
         elif [[ "$ID" == "rhel" || "$ID" == "centos" || "$ID" == "fedora" || "$ID" == "amzn" ]]; then
-            rpm -ivh SentinelAgent_linux_x86_64_v25_1_2_17.rpm && INSTALL_SUCCESS=true
+            rpm -ivh SentinelAgent_linux_v23_1_2_9.rpm && INSTALL_SUCCESS=true
         fi
 
         if [ "$INSTALL_SUCCESS" = true ]; then
