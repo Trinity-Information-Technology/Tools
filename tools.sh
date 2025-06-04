@@ -5,7 +5,7 @@
 # Must be run as root
 
 # Set error handling
-set -e
+set +e
 trap 'echo "Error occurred at line $LINENO. Command: $BASH_COMMAND"' ERR
 
 # Log with timestamp
