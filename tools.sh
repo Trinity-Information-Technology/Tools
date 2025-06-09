@@ -42,7 +42,7 @@ install_wget() {
             apt-get update -y && apt-get install -y wget
             ;;
         centos|rhel|fedora|amzn)
-            yum update -y && yum install -y wget
+            yum update -y && yum install -y wget 
             ;;
         *)
             log_message "Unknown OS: $OS_NAME"
@@ -158,7 +158,7 @@ install_sentinelone() {
         if [[ "$ID" == "ubuntu" || "$ID" == "debian" ]]; then
             dpkg -i SentinelAgent_linux_v23_1_2_9.deb && INSTALL_SUCCESS=true
         elif [[ "$ID" == "rhel" || "$ID" == "centos" || "$ID" == "fedora" || "$ID" == "amzn" ]]; then
-            rpm -ivh SentinelAgent_linux_v23_1_2_9.rpm && INSTALL_SUCCESS=true
+            rpm -ivh --nodigest --nofiledigest SentinelAgent_linux_v23_1_2_9.rpm && INSTALL_SUCCESS=true
         fi
 
         if [ "$INSTALL_SUCCESS" = true ]; then
