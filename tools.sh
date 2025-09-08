@@ -1,22 +1,17 @@
 #!/bin/bash
 # Combined Security Installation Script
-# Installs: wget, Automox, Splunk Forwarder, SentinelOne, Rapid7 Insight Agent
+# Installs: wget, Automox, Splunk Forwarder, Rapid7 Insight Agent, SentinelOne
 # Supports: Ubuntu, CentOS, Debian, and Amazon Linux
 # Must be run as root
 
-# Stop on first error
 set -e
 trap 'echo "Error occurred at line $LINENO. Command: $BASH_COMMAND"' ERR
-
-# Optional: write output to a log file
 exec > >(tee -a /var/log/security_install.log) 2>&1
 
-# Log with timestamp
 log_message() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
 }
 
-# Ensure script is run as root
 if [ "$(id -u)" -ne 0 ]; then
     log_message "Error: Run this script as root or with sudo."
     exit 1
@@ -42,7 +37,7 @@ install_wget() {
             apt-get update -y && apt-get install -y wget
             ;;
         centos|rhel|fedora|amzn)
-            yum update -y && yum install -y wget 
+            yum update -y && yum install -y wget
             ;;
         *)
             log_message "Unsupported OS: $OS_NAME"
@@ -81,7 +76,6 @@ install_splunk_forwarder() {
         log_message "Splunk Forwarder already installed."
         return
     fi
-
     if command -v apt-get &>/dev/null; then
         apt-get install -y acl
     elif command -v yum &>/dev/null; then
@@ -119,7 +113,84 @@ EOF
 }
 
 ###########################################
-# 4. Install SentinelOne Agent
+# 4. Install Rapid7 Insight Agent (Updated)
+###########################################
+arch_type=$(uname -p)
+
+check_service() {
+    service_name="$1"
+    
+    if ! systemctl status "$service_name" &>/dev/null; then
+        echo "Service '$service_name' not found."
+        return 1
+    fi
+    
+    if systemctl is-active --quiet "$service_name"; then
+        echo "$service_name is running."
+        return 0
+    else
+        echo "$service_name is not running."
+        return 1
+    fi
+}
+
+install_rapid7_insight_agent() {
+    # Replace with your actual token from Rapid7 console
+    rapid7_token="${RAPID7_TOKEN:-us2:5876cba8-81ee-4d81-9374-8a32809b8363}"
+    
+    # This will check that the Rapid7 User Token was provided when created the policy. If the token is not added, this worklet will exit.
+    if [[ -z "$rapid7_token" ]]; then
+        log_message "A secret key, named rapid7_token was not found. For this worklet to work, please add your Rapid7 user token to the policy for this worklet. Worklet exiting..."
+        return 1
+    fi
+    
+    # This will check for the existence of the Rapid7 Agent and install it if it is missing:
+    if check_service ir_agent; then
+        log_message "Rapid7 Insight Agent is already installed. No changes required."
+        return 0
+    else
+        if [[ -d "/opt/rapid7/ir_agent" ]]; then
+            log_message "Rapid7 Insight Agent is installed, but not active. This worklet will not reinstall the agent. Exiting..."
+            return 0
+        else
+            log_message "Rapid7 Insight Agent is not installed. Attempting to install it now..."
+            
+            if [[ "$arch_type" == "x86_64" ]]; then
+                curl -L https://us.storage.endpoint.ingress.rapid7.com/com.rapid7.razor.public/endpoint/agent/1697643903/linux/x86_64/agent_control_1697643903_x64.sh -o agent_installer-x86_64.sh
+                rapid7_install_file="agent_installer-x86_64.sh"
+            else
+                curl -L https://us.storage.endpoint.ingress.rapid7.com/com.rapid7.razor.public/endpoint/agent/1697643903/linux/arm64/agent_control_1697643903_arm64.sh -o agent_installer-arm64.sh
+                rapid7_install_file="agent_installer-arm64.sh"
+            fi
+            
+            chmod +x "$rapid7_install_file"
+            ./"$rapid7_install_file" install_start --token "$rapid7_token"
+            
+            if check_service ir_agent; then
+                rapid7_installed="true"
+                return 0
+            else
+                rapid7_installed="false"
+                return 1
+            fi
+        fi
+    fi
+    
+    # Final Evaluation
+    if [[ "$rapid7_installed" == "false" ]]; then
+        log_message "Rapid7 Insight Agent failed to install. Please check the Automox Activity Log for more information."
+        return 1
+    elif [[ -f "/opt/rapid7/ir_agent/ir_agent" ]]; then
+        log_message "Rapid7 was installed - The agent can be found at /opt/rapid7/ir_agent/ir_agent."
+        return 0
+    else
+        log_message "Rapid7 installation finished, but the agent could not be found. Please read the full activity log to confirm the installation finished."
+        return 1
+    fi
+}
+
+###########################################
+# 5. Install SentinelOne Agent
 ###########################################
 install_sentinelone() {
     log_message "Installing SentinelOne..."
@@ -153,24 +224,6 @@ install_sentinelone() {
 }
 
 ###########################################
-# 5. Install Rapid7 Insight Agent
-###########################################
-install_rapid7_agent() {
-    log_message "Installing Rapid7 Insight Agent..."
-
-    REGION="${RAPID7_REGION:-us}"
-    ACTIVATION_KEY="${RAPID7_KEY:-us2:5876cba8-81ee-4d81-9374-8a32809b8363}"
-
-    curl -s -O https://downloads.r7insight.com/agent/InsightAgentInstaller_Linux.sh && chmod +x InsightAgentInstaller_Linux.sh
-
-    ./InsightAgentInstaller_Linux.sh -r "$REGION" -k "$ACTIVATION_KEY"
-
-    if systemctl is-active --quiet ir_agent; then
-        log_message "Rapid7 Insight Agent installed and running."
-    fi
-}
-
-###########################################
 # Main
 ###########################################
 main() {
@@ -179,16 +232,15 @@ main() {
     install_wget
     install_automox
     install_splunk_forwarder
+    install_rapid7_insight_agent
     install_sentinelone
-    install_rapid7_agent
 
     log_message "------- Final Status Report -------"
     log_message "wget: $(command -v wget >/dev/null && echo "installed" || echo "missing")"
     log_message "Automox: $(systemctl is-active amagent || echo "unknown")"
     log_message "Splunk: $(/opt/splunkforwarder/bin/splunk status || echo "unknown")"
-    log_message "SentinelOne: $(systemctl is-active sentinelone || echo "unknown")"
     log_message "Rapid7: $(systemctl is-active ir_agent || echo "unknown")"
+    log_message "SentinelOne: $(systemctl is-active sentinelone || echo "unknown")"
 }
 
 main
-
