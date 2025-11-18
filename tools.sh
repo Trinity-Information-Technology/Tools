@@ -171,8 +171,12 @@ EOF
     log_message "Enabling boot-start..."
     "$SPLUNK_INSTALL_PATH/bin/splunk" enable boot-start -user splunkfwd --accept-license --answer-yes --no-prompt
 
+    # Wait a moment for Splunk to fully initialize
+    sleep 3
+
     # Configure deployment server
     log_message "Configuring deployment server..."
+    "$SPLUNK_INSTALL_PATH/bin/splunk" set deploy-poll "$DEPLOYMENT_SERVER:$DEPLOYMENT_SERVER_PORT" -auth "$SPLUNK_ADMIN_USER:$SPLUNK_ADMIN_PASSWORD" 2>/dev/null || \
     "$SPLUNK_INSTALL_PATH/bin/splunk" set deploy-poll "$DEPLOYMENT_SERVER:$DEPLOYMENT_SERVER_PORT" -auth "$SPLUNK_ADMIN_USER:$SPLUNK_ADMIN_PASSWORD"
 
     # Restart Splunk to apply changes
@@ -314,4 +318,3 @@ main() {
 }
 
 main
-
