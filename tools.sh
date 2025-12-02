@@ -3,6 +3,7 @@
 # Installs: wget, Automox, Splunk Forwarder, Rapid7 Insight Agent, SentinelOne
 # Supports: Ubuntu, CentOS, RHEL, Debian, and Amazon Linux
 # Must be run as root
+# Date 12/2/2025
 
 set -e
 trap 'echo "Error occurred at line $LINENO. Command: $BASH_COMMAND"' ERR
